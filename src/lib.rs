@@ -16,11 +16,8 @@
 //! and is suitable both as a memory allocator and as a global allocator.
 
 #![cfg_attr(feature = "alloc_trait", feature(allocator_api))]
-#![deny(missing_docs, intra_doc_link_resolution_failure)]
+#![deny(missing_docs, broken_intra_doc_links)]
 #![no_std]
-
-extern crate jemalloc_sys;
-extern crate libc;
 
 #[cfg(feature = "alloc_trait")]
 use core::alloc::{Alloc, AllocErr, CannotReallocInPlace, Excess};
@@ -49,7 +46,7 @@ use libc::{c_int, c_void};
     target_arch = "mipsel",
     target_arch = "powerpc"
 )))]
-const alignof_max_align_t: usize = 8;
+const ALIGNOF_MAX_ALIGN_T: usize = 8;
 #[cfg(all(any(
     target_arch = "x86",
     target_arch = "x86_64",
@@ -60,7 +57,7 @@ const alignof_max_align_t: usize = 8;
     target_arch = "s390x",
     target_arch = "sparc64"
 )))]
-const alignof_max_align_t: usize = 16;
+const ALIGNOF_MAX_ALIGN_T: usize = 16;
 
 /// If `align` is less than `_Alignof(max_align_t)`, and if the requested
 /// allocation `size` is larger than the alignment, we are guaranteed to get a
@@ -69,7 +66,7 @@ const alignof_max_align_t: usize = 16;
 ///
 /// Otherwise, it returns the alignment flag to pass to the jemalloc APIs.
 fn layout_to_flags(align: usize, size: usize) -> c_int {
-    if align <= alignof_max_align_t && align <= size {
+    if align <= ALIGNOF_MAX_ALIGN_T && align <= size {
         0
     } else {
         ffi::MALLOCX_ALIGN(align)
@@ -287,5 +284,5 @@ pub unsafe fn usable_size<T>(ptr: *const T) -> usize {
 
 /// Raw bindings to jemalloc
 mod ffi {
-    pub use jemalloc_sys::*;
+    pub use tikv_jemalloc_sys::*;
 }
